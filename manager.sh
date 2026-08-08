@@ -32,6 +32,7 @@ setup_reviews_env_var() {
     if [ -n "${!VAR_NAME}" ]; then
         REVIEWS_PATH="${!VAR_NAME}"
     else
+        clear
         echo -e "${BLUE}=== Configuration Initiale ===${NC}"
         read -r -p "Entrez l'emplacement absolu du dossier de reviews : " input_dir
         REVIEWS_PATH="${input_dir/#\~/$HOME}"
@@ -46,20 +47,24 @@ setup_reviews_env_var() {
     fi
 }
 
-# Execution des scripts sur GitHub
+# Exécution des scripts sur GitHub
 execute_remote_script() {
     local action="$1" # install / uninstall
     local item="$2"   # folder, git_c, git_acp, review
     local script_url="${RAW_BASE_URL}/scripts/${item}/${action}.sh"
 
+    clear
     echo -e "${BLUE}==> Exécution de $action pour $item ...${NC}"
 
     if curl --output /dev/null --silent --head --fail "$script_url"; then
         curl -sSL "$script_url" | env "$VAR_NAME=${!VAR_NAME}" SHELL_RC="$SHELL_RC" bash
-        echo -e "${GREEN}[OK] Opération '$action' terminée.${NC}"
+        echo -e "\n${GREEN}[OK] Opération '$action' terminée.${NC}"
     else
-        echo -e "${RED}[Erreur] Impossible de trouver le script : $script_url${NC}"
+        echo -e "\n${RED}[Erreur] Impossible de trouver le script : $script_url${NC}"
     fi
+
+    echo ""
+    read -r -p "Appuyez sur Entrée pour continuer..."
 }
 
 show_submenu() {
@@ -67,7 +72,8 @@ show_submenu() {
     local id="$2"
 
     while true; do
-        echo -e "\n${BLUE}--- [ Option : $name ] ---${NC}"
+        clear
+        echo -e "${BLUE}--- [ Option : $name ] ---${NC}"
         echo "1) Installer"
         echo "2) Désinstaller"
         echo "3) Retour"
@@ -77,7 +83,10 @@ show_submenu() {
             1) execute_remote_script "install" "$id" ;;
             2) execute_remote_script "uninstall" "$id" ;;
             3) break ;;
-            *) echo -e "${RED}Option invalide.${NC}" ;;
+            *) 
+                echo -e "${RED}Option invalide.${NC}"
+                sleep 1
+                ;;
         esac
     done
 }
@@ -86,8 +95,9 @@ show_submenu() {
 setup_reviews_env_var
 
 while true; do
-    echo -e "\n${BLUE}=== 42-TOOLS MANAGER ===${NC}"
-    echo -e "Variable $VAR_NAME = ${YELLOW}${!VAR_NAME}${NC}"
+    clear
+    echo -e "${BLUE}=== 42-TOOLS MANAGER ===${NC}"
+    echo -e "Variable $VAR_NAME = ${YELLOW}${!VAR_NAME}${NC}\n"
     echo "1) Dossier de reviews"
     echo "2) Commande git c (Clone + .gitignore .c)"
     echo "3) Commande git acp (Add + Commit + Push)"
@@ -101,9 +111,13 @@ while true; do
         3) show_submenu "Commande git acp" "git_acp" ;;
         4) show_submenu "Commande review (r)" "review" ;;
         5)
+            clear
             echo -e "${GREEN}Au revoir ! Pensez à exécuter 'source $SHELL_RC' dans votre terminal.${NC}"
             exit 0
             ;;
-        *) echo -e "${RED}Choix invalide.${NC}" ;;
+        *) 
+            echo -e "${RED}Choix invalide.${NC}"
+            sleep 1
+            ;;
     esac
 done
