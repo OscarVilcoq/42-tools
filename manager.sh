@@ -98,19 +98,17 @@ while true; do
     clear
     echo -e "${BLUE}=== 42-TOOLS MANAGER ===${NC}"
     echo -e "Variable $VAR_NAME = ${YELLOW}${!VAR_NAME}${NC}\n"
-    echo "1) Dossier de reviews"
-    echo "2) Commande git c (Clone + .gitignore .c)"
-    echo "3) Commande git acp (Add + Commit + Push)"
-    echo "4) Commande review / r (Clean + Clone + Flags)"
-    echo "5) Exit"
-    read -r -p "Sélectionnez une option (1-5) : " main_choice
+    echo "1) Commande git c (Clone + .gitignore .c)"
+    echo "2) Commande git acp (Add + Commit + Push)"
+    echo "3) Commande review / r (Clean + Clone + Flags)"
+    echo "4) Exit"
+    read -r -p "Sélectionnez une option (1-4) : " main_choice
 
     case $main_choice in
-        1) show_submenu "Dossier de reviews" "folder" ;;
-        2) show_submenu "Commande git c" "git_c" ;;
-        3) show_submenu "Commande git acp" "git_acp" ;;
-        4) show_submenu "Commande review (r)" "review" ;;
-        5)
+        1) show_submenu "Commande git c" "git_c" ;;
+        2) show_submenu "Commande git acp" "git_acp" ;;
+        3) show_submenu "Commande review (r)" "review" ;;
+        4)
             clear
             echo -e "${GREEN}Au revoir ! Pensez à exécuter 'source $SHELL_RC' dans votre terminal.${NC}"
             exit 0
