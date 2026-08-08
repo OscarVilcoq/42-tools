@@ -1,0 +1,1 @@
+echo -e '\nreview() {\n    cd ~/Documents/Corrections/ || return\n    rm -rf .[^.]* * 2>/dev/null\n    if [ ! -z "$1" ]; then\n        git clone "$1" && cd "$(basename "$1" .git)"\nfi\n}\nalias r="review"' >> ~/.bashrc && source ~/.bashrc
