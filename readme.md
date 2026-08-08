@@ -9,7 +9,7 @@ Un ensemble d'outils en ligne de commande et de scripts d'automatisation conçus
 Lancez l'installateur interactif en une seule commande dans votre terminal :
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/OscarVilcoq/42-tools/main/manager.sh | bash
+Installer le fichier manager.sh et lancer le !
 ```
 
 > **Note :** Une fois l'installation terminée, pensez à recharger votre configuration shell ou à ouvrir un nouveau terminal pour activer la variable d'environnement :
