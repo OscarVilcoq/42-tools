@@ -36,8 +36,9 @@ done
 
 if [ -n "$REPO_URL" ]; then
     echo "==> Clonnage de $REPO_URL..."
-    git clone "$REPO_URL" target_review
-    cd target_review || exit 1
+    git clone "$REPO_URL" target_review && \
+    cd target_review && \
+    code . || { echo "Erreur lors du clonage ou de l'ouverture de VS Code"; exit 1; }
 fi
 
 if [ "$NORM" = true ]; then
@@ -59,6 +60,7 @@ if [ "$TREE" = true ]; then
 fi
 
 echo -e "\nEmplacement actuel : $(pwd)"
+
 exec $SHELL
 EOF
 
