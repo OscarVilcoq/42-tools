@@ -6,10 +6,10 @@ Un ensemble d'outils en ligne de commande et de scripts d'automatisation conçus
 
 ## 🚀 Installation rapide
 
-Lancez l'installateur interactif en une seule commande dans votre terminal :
+Lancez l'installateur interactif en une seule commande dans votre terminal apres l'installation du fichier manager.sh:
 
 ```bash
-Installer le fichier manager.sh et lancer le !
+bash manager.sh
 ```
 
 > **Note :** Une fois l'installation terminée, pensez à recharger votre configuration shell ou à ouvrir un nouveau terminal pour activer la variable d'environnement :
