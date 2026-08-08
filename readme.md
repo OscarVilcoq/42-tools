@@ -1,4 +1,4 @@
-# 🛠️ Configuration Git & Outils de Code (Norme 42)
+# 🛠️ 42 Tools
 
 Ce guide explique comment installer et utiliser 3 raccourcis puissants pour cloner, configurer, sauvegarder et réviser vos projets de code (optimisés pour l'école 42).
 
