@@ -13,7 +13,7 @@ review() {
         case "$opt" in
             n) run_norminette=true ;;
             t) run_tree=true ;;
-            *) echo "Usage: r [-n] [-t] <git_url>"; return 1 ;;
+            *) echo "Usage: r [-n] [-t] [git_url]"; return 1 ;;
         esac
     done
     shift $((OPTIND-1))
@@ -21,18 +21,18 @@ review() {
     local url="$1"
     local review_dir="${OV_42_TOOLS_REVIEWS_PATH:-$HOME/review}"
 
-    if [ -z "$url" ]; then
-        echo "Erreur : L'URL du dépôt Git est manquante."
-        echo "Usage: r [-n] [-t] <git_url>"
-        return 1
-    fi
-
-    # 2. Préparation du dossier (création + nettoyage total du contenu)
+    # 2. Préparation du dossier (création + déplacement + nettoyage total)
     mkdir -p "$review_dir"
     cd "$review_dir" || return
     find . -mindepth 1 -delete
 
-    # 3. Clonage et exécution conditionnelle
+    # 3. Si aucune URL n'est fournie, on s'arrête là
+    if [ -z "$url" ]; then
+        echo "🧹 Dossier de review nettoyé et ouvert dans le terminal : $review_dir"
+        return 0
+    fi
+
+    # 4. Clonage et exécution conditionnelle si une URL est présente
     if git clone "$url"; then
         cd "$(basename "$url" .git)" || return
 
