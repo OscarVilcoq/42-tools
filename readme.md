@@ -1,19 +1,37 @@
-# 🛠️ 42-Tools
-
-Un ensemble d'outils en ligne de commande et de scripts d'automatisation conçus pour simplifier la gestion des projets et le workflow de correction/peer-learning à **42**.
+ dans le dossier de review et le nettoie
+  r
+  ```
 
 ---
 
-## 🚀 Installation rapide
+## 📂 Structure du dépôt
 
-Lancez l'installateur interactif en une seule commande dans votre terminal :
-
-```bash
-curl -sSL [https://raw.githubusercontent.com/OscarVilcoq/42-tools/main/manager.sh](https://raw.githubusercontent.com/OscarVilcoq/42-tools/main/manager.sh) | bash
+```text
+42-tools/
+├── README.md
+├── manager.sh              # Script principal du menu interactif
+└── scripts/
+    ├── folder/             # Gestion du dossier de review
+    │   ├── install.sh
+    │   └── uninstall.sh
+    ├── git_c/              # Module 'git c'
+    │   ├── install.sh
+    │   └── uninstall.sh
+    ├── git_acp/            # Module 'git acp'
+    │   ├── install.sh
+    │   └── uninstall.sh
+    └── review/             # Module 'review / r'
+        ├── install.sh
+        └── uninstall.sh
 ```
 
-Note : Une fois l'installation terminée, pensez à recharger votre configuration shell ou à ouvrir un nouveau terminal pour activer la variable d'environnement :
+---
+
+## 🗑️ Désinstallation
+
+Pour supprimer un module spécifique ou la variable d'environnement, relancez simplement l'installateur :
 
 ```bash
-source ~/.bashrc   # Ou ~/.zshrc selon votre shell
+curl -sSL https://raw.githubusercontent.com/OscarVilcoq/42-tools/main/manager.sh | bash
 ```
+Sélectionnez le composant souhaité dans le menu, puis choisissez l'option **Désinstaller**.
