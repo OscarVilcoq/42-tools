@@ -1,1 +1,0 @@
-git config --global alias.cmp '!f() { git add -A && git commit -m "$1" && git push; }; f'
