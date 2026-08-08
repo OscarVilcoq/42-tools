@@ -1,0 +1,73 @@
+#!/usr/bin/env bash
+BIN_DIR="$HOME/.local/bin"
+mkdir -p "$BIN_DIR"
+
+# 1. Création du binaire 'review'
+cat << 'EOF' > "$BIN_DIR/review"
+#!/usr/bin/env bash
+
+if [ -z "$OV_42_TOOLS_REVIEWS_PATH" ]; then
+    echo "Erreur : La variable OV_42_TOOLS_REVIEWS_PATH n'est pas définie."
+    exit 1
+fi
+
+mkdir -p "$OV_42_TOOLS_REVIEWS_PATH"
+cd "$OV_42_TOOLS_REVIEWS_PATH" || exit 1
+
+echo "==> Nettoyage du dossier de reviews..."
+rm -rf -- ..?* .[!.]* * 2>/dev/null || true
+
+NORM=false
+TREE=false
+REPO_URL=""
+
+# Analyse des arguments
+for arg in "$@"; do
+    case $arg in
+        -n) NORM=true ;;
+        -t) TREE=true ;;
+        *)
+            if [[ "$arg" =~ ^https?://|^git@ ]]; then
+                REPO_URL="$arg"
+            fi
+            ;;
+    esac
+done
+
+if [ -n "$REPO_URL" ]; then
+    echo "==> Clonnage de $REPO_URL..."
+    git clone "$REPO_URL" target_review
+    cd target_review || exit 1
+fi
+
+if [ "$NORM" = true ]; then
+    echo -e "\n--- NORMINETTE ---"
+    if command -v norminette &> /dev/null; then
+        norminette
+    else
+        echo "Norminette n'est pas installée."
+    fi
+fi
+
+if [ "$TREE" = true ]; then
+    echo -e "\n--- TREE ---"
+    if command -v tree &> /dev/null; then
+        tree
+    else
+        find . -maxdepth 3 -not -path '*/.*'
+    fi
+fi
+
+echo -e "\nEmplacement actuel : $(pwd)"
+exec $SHELL
+EOF
+
+chmod +x "$BIN_DIR/review"
+
+# 2. Ajout de l'alias 'r' dans le fichier shell RC
+SHELL_RC="${SHELL_RC:-$HOME/.bashrc}"
+if ! grep -q "alias r=" "$SHELL_RC" 2>/dev/null; then
+    echo "alias r=\"$BIN_DIR/review\"" >> "$SHELL_RC"
+fi
+
+echo "Commande 'review' et alias 'r' installés."
