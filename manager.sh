@@ -101,14 +101,16 @@ while true; do
     echo "1) Commande git c (Clone + .gitignore .c)"
     echo "2) Commande git acp (Add + Commit + Push)"
     echo "3) Commande review / r (Clean + Clone + Flags)"
-    echo "4) Exit"
-    read -r -p "Sélectionnez une option (1-4) : " main_choice
+    echo "4) Commande ccc / c (Compile ensemble tout les .c courant)"
+    echo "5) Exit"
+    read -r -p "Sélectionnez une option (1-5) : " main_choice
 
     case $main_choice in
         1) show_submenu "Commande git c" "git_c" ;;
         2) show_submenu "Commande git acp" "git_acp" ;;
         3) show_submenu "Commande review (r)" "review" ;;
-        4)
+        3) show_submenu "Commande ccc (c)" "ccc" ;;
+        5)
             clear
             echo -e "${GREEN}Au revoir ! Pensez à exécuter 'source $SHELL_RC' dans votre terminal.${NC}"
             exit 0
