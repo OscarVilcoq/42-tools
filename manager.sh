@@ -109,7 +109,7 @@ while true; do
         1) show_submenu "Commande git c" "git_c" ;;
         2) show_submenu "Commande git acp" "git_acp" ;;
         3) show_submenu "Commande review (r)" "review" ;;
-        3) show_submenu "Commande ccc (c)" "ccc" ;;
+        4) show_submenu "Commande ccc (c)" "ccc" ;;
         5)
             clear
             echo -e "${GREEN}Au revoir ! Pensez à exécuter 'source $SHELL_RC' dans votre terminal.${NC}"
