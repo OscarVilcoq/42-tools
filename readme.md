@@ -87,9 +87,6 @@ Un outil complet pour préparer votre environnement de correction en un instant.
 ├── README.md
 ├── manager.sh              # Script principal du menu interactif
 └── scripts/
-    ├── folder/             # Gestion du dossier de review
-    │   ├── install.sh
-    │   └── uninstall.sh
     ├── git_c/              # Module 'git c'
     │   ├── install.sh
     │   └── uninstall.sh
