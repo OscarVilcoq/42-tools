@@ -28,15 +28,17 @@ detect_shell_rc() {
 SHELL_RC=$(detect_shell_rc)
 
 # Navigateur de dossiers interactif
+# /!\ Les echos du menu sont redirigés vers stderr (>&2)
+# pour que seul le chemin final soit capturé sur stdout.
 browse_directory() {
     local current_dir="${1:-$HOME}"
     [ -d "$current_dir" ] || current_dir="$HOME"
     current_dir=$(cd "$current_dir" && pwd)
 
     while true; do
-        clear
-        echo -e "${BLUE}=== Sélection du dossier de review ===${NC}"
-        echo -e "Dossier actuel : ${YELLOW}${current_dir}${NC}\n"
+        clear >&2
+        echo -e "${BLUE}=== Sélection du dossier de review ===${NC}" >&2
+        echo -e "Dossier actuel : ${YELLOW}${current_dir}${NC}\n" >&2
 
         # Liste des sous-dossiers non cachés
         local subdirs=()
@@ -44,17 +46,17 @@ browse_directory() {
             subdirs+=("$dir")
         done < <(find "$current_dir" -maxdepth 1 -mindepth 1 -type d ! -name ".*" -print0 2>/dev/null | sort -z)
 
-        echo "0) [VALIDER CE DOSSIER]"
-        echo ".. ) [Dossier parent]"
-        echo -e "\n--- Sous-dossiers ---"
+        echo "0) [VALIDER CE DOSSIER]" >&2
+        echo ".. ) [Dossier parent]" >&2
+        echo -e "\n--- Sous-dossiers ---" >&2
 
         local i=1
         for d in "${subdirs[@]}"; do
-            echo "$i) $(basename "$d")/"
+            echo "$i) $(basename "$d")/" >&2
             ((i++))
         done
 
-        echo ""
+        echo "" >&2
         read -r -p "Choix (0 pour valider, .. pour remonter, N° pour entrer) : " choice
 
         if [[ "$choice" == "0" ]]; then
@@ -65,7 +67,7 @@ browse_directory() {
         elif [[ "$choice" =~ ^[0-9]+$ ]] && [ "$choice" -ge 1 ] && [ "$choice" -le "${#subdirs[@]}" ]; then
             current_dir="${subdirs[$((choice-1))]}"
         else
-            echo -e "${RED}Choix invalide.${NC}"
+            echo -e "${RED}Choix invalide.${NC}" >&2
             sleep 1
         fi
     done
