@@ -48,7 +48,7 @@ echo "Opération terminée ! Les données et leurs métadonnées ont été copi�
 
 cd "$TARGET_PATH"
 
-exec "${SHELL:-bash}"
+exec $SHELL
 EOF
 
 chmod +x "$BIN_DIR/git-retry"
