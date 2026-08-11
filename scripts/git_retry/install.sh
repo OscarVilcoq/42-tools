@@ -44,9 +44,11 @@ else
     tar --exclude='.git' -cf - . | (cd "$TARGET_PATH" && tar -xf -)
 fi
 
-cd "$TARGET_PATH/"
-
 echo "Opération terminée ! Les données et leurs métadonnées ont été copiées sans altération."
+
+cd "$TARGET_PATH"
+
+exec "${SHELL:-bash}"
 EOF
 
 chmod +x "$BIN_DIR/git-retry"
