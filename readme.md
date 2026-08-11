@@ -1,54 +1,116 @@
-# 🛠️ Shell & Git Productivity Tools
+# 🛠️ 42-Tools
 
-Une suite d'outils CLI légers et d'outils d'extension Git conçus pour accélérer le workflow quotidien des développeurs (notamment dans un environnement d'apprentissage du C / École 42).
-
-[![Bash Shell Script](https://img.shields.io/badge/Language-Bash-4EAA25.svg?style=flat&logo=gnu-bash&logoColor=white)](https://www.gnu.org/software/bash/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+Un ensemble d'outils en ligne de commande et de scripts d'automatisation conçus pour simplifier la gestion des projets et le workflow de correction/peer-learning à **42**.
 
 ---
 
-## 📋 Table des matières
+## 🚀 Installation rapide
 
-- [Fonctionnalités](#-fonctionnalités)
-- [Prérequis](#-prérequis)
-- [Installation](#-installation)
-- [Utilisation](#-utilisation)
-  - [Compilation C (`ccc` / `c`)](#1-compilation-c-ccc--c)
-  - [Git Quick Add, Commit & Push (`git acp`)](#2-git-quick-add-commit--push-git-acp)
-  - [Git Clone & Initialisation de projet C (`git c`)](#3-git-clone--initialisation-de-projet-c-git-c)
-  - [Git Retry (`git retry`)](#4-git-retry-git-retry)
-  - [Gestion de Reviews (`review` / `r`)](#5-gestion-de-reviews-review--r)
-- [Désinstallation](#-désinstallation)
-- [Structure du dépôt](#-structure-du-dépôt)
-
----
-
-## ✨ Fonctionnalités
-
-* **Compilation C Simplifiée (`ccc`)** : Compile automatiquement tous les fichiers `.c` d'un dossier avec les flags stricts (`-Wall -Wextra -Werror`).
-* **Git Add / Commit / Push Rapide (`git acp`)** : Automatise l'enchaînement standard d'enregistrement et d'envoi des modifications sur Git.
-* **Initialisation Automatique de Projet (`git c`)** : Clone un dépôt, prépare les dossiers d'exercices (`ex00`, `ex01`...) et configure un `.gitignore` prêt pour le C.
-* **Sauvegarde & Clone Sécurisé (`git retry`)** : Clone un projet dans un dossier adjacent et copie l'état de votre répertoire courant avec préservation stricte des métadonnées (droits, liens, attributs).
-* **Environnement de Review / Peer-Evaluation (`review`)** : Nettoie un espace de travail dédié, clone un dépôt distant, ouvre VS Code, et lance automatiquement `norminette` ou `tree`.
-
----
-
-## ⚙️ Prérequis
-
-* Un environnement UNIX/Linux ou macOS avec **Bash**.
-* **Git** installe sur le système.
-* Assurez-vous que `$HOME/.local/bin` est bien présent dans votre variable d'environnement `$PATH`.
-
----
-
-## 🚀 Installation
-
-Chaque outil dispose de son propre script d'installation dans le dossier d'installation correspondant. Pour installer un outil spécifique, exécutez son script d'installation depuis la racine du projet :
+Lancez l'installateur interactif en une seule commande dans votre terminal apres l'installation du fichier manager.sh:
 
 ```bash
-# Exemple pour installer la commande de compilation 'ccc'
-./install_ccc.sh
-
-# Exemple pour installer l'alias 'git acp'
-./install_git_acp.sh
+bash manager.sh
 ```
+
+> **Note :** Une fois l'installation terminée, pensez à recharger votre configuration shell ou à ouvrir un nouveau terminal pour activer la variable d'environnement :
+> ```bash
+> source ~/.bashrc   # Ou ~/.zshrc selon votre shell
+> ```
+
+---
+
+## ⚙️ Fonctionnalités & Commandes
+
+L'interface interactive (`manager.sh`) vous permet de configurer et d'installer/désinstaller indépendamment les modules suivants :
+
+### 1. 📁 Configuration du dossier de Reviews
+Lors de la première utilisation, le script vous demande l'emplacement de votre dossier dédié aux corrections. Il enregistre ce chemin dans la variable d'environnement utilisateur :
+```bash
+OV_42_TOOLS_REVIEWS_PATH="/chemin/vers/votre/dossier"
+```
+
+---
+
+### 2. 📑 Commande `git c` (Init avec `.gitignore` C)
+Permet de cloner un dépôt et de générer automatiquement un fichier `.gitignore` restrictif adapté aux projets en C.
+
+* **Fonctionnement :** Ignore l'intégralité des fichiers du projet **sauf** l'arborescence des dossiers et les fichiers d'extension `.c`.
+* **Utilisation :**
+  ```bash
+  git c <repo_url> [nom_du_dossier]
+  ```
+
+---
+
+### 3. 🚀 Commande `git acp` (Add, Commit & Push)
+Une commande rapide pour stager, commiter et pusher vos modifications en une seule étape.
+
+* **Utilisation avec message personnalisé :**
+  ```bash
+  git acp "Fix norminette et retours de correction"
+  ```
+* **Utilisation par défaut** *(message : `"Update"`)* :
+  ```bash
+  git acp
+  ```
+
+---
+
+### 4. 🔍 Commande `review` (Alias `r`)
+Un outil complet pour préparer votre environnement de correction en un instant.
+
+* **Fonctionnement :**
+  1. Se déplace dans le dossier configuré (`OV_42_TOOLS_REVIEWS_PATH`).
+  2. **Nettoie entièrement** le contenu du dossier de correction.
+  3. Clone le dépôt du corrigé *(si une URL est fournie)* et entre dans le répertoire.
+  4. Exécute les options passées par drapeaux (flags).
+
+* **Options / Flags :**
+  * `-n` : Exécute `norminette` automatiquement.
+  * `-t` : Affiche l'arborescence des fichiers avec `tree`.
+
+* **Exemples d'utilisation :**
+  ```bash
+  # Nettoie le dossier, clone le projet et lance norminette + tree
+  r https://github.com/votre-peer/projet.git -n -t
+
+  # Se déplace juste dans le dossier de review et le nettoie
+  r
+  ```
+
+---
+
+## 📂 Structure du dépôt
+
+```text
+42-tools/
+├── README.md
+├── manager.sh              # Script principal du menu interactif
+└── scripts/
+    ├── ccc/                # Module de compilation rapide ('c' / 'ccc')
+    │   ├── install.sh
+    │   └── uninstall.sh
+    ├── git_acp/            # Module 'git acp'
+    │   ├── install.sh
+    │   └── uninstall.sh
+    ├── git_c/              # Module 'git c'
+    │   ├── install.sh
+    │   └── uninstall.sh
+    ├── git_retry/          # Module 'git retry'
+    │   ├── install.sh
+    │   └── uninstall.sh
+    └── review/             # Module 'review / r'
+        ├── install.sh
+        └── uninstall.sh
+```
+
+---
+
+## 🗑️ Désinstallation
+
+Pour supprimer un module spécifique ou la variable d'environnement, relancez simplement l'installateur :
+
+```bash
+curl -sSL https://raw.githubusercontent.com/OscarVilcoq/42-tools/main/manager.sh | bash
+```
+Sélectionnez le composant souhaité dans le menu, puis choisissez l'option **Désinstaller**.
