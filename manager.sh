@@ -17,6 +17,20 @@ RAW_BASE_URL="https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/${
 
 VAR_NAME="OV_42_TOOLS_REVIEWS_PATH"
 
+# Liste complète des outils disponibles
+ALL_ITEMS=("git_c" "git_acp" "git_retry" "review" "ccc")
+
+get_item_label() {
+    case "$1" in
+        "git_c") echo "git c (Clone + .gitignore .c)" ;;
+        "git_acp") echo "git acp (Add + Commit + Push)" ;;
+        "git_retry") echo "git retry (Clone + Copy data)" ;;
+        "review") echo "review / r (Clean + Clone + Flags)" ;;
+        "ccc") echo "ccc / c (Compile tous les .c)" ;;
+        *) echo "$1" ;;
+    esac
+}
+
 detect_shell_rc() {
     if [[ "$SHELL" == *"zsh"* ]]; then
         echo "$HOME/.zshrc"
@@ -26,10 +40,35 @@ detect_shell_rc() {
 }
 
 SHELL_RC=$(detect_shell_rc)
+BIN_DIR="$HOME/.local/bin"
+
+# Détection précise de l'installation basée sur les scripts d'install
+is_installed() {
+    local item="$1"
+
+    case "$item" in
+        "git_c")
+            [ -f "$BIN_DIR/git-c" ] || git config --global --get alias.c &>/dev/null
+            ;;
+        "git_acp")
+            [ -f "$BIN_DIR/git-acp" ] || git config --global --get alias.acp &>/dev/null
+            ;;
+        "git_retry")
+            [ -f "$BIN_DIR/git-retry" ] || git config --global --get alias.retry &>/dev/null
+            ;;
+        "review")
+            [ -f "$BIN_DIR/review" ] || ( [ -f "$SHELL_RC" ] && grep -q "alias r=" "$SHELL_RC" 2>/dev/null )
+            ;;
+        "ccc")
+            [ -f "$BIN_DIR/ccc" ] || ( [ -f "$SHELL_RC" ] && grep -q "alias c=" "$SHELL_RC" 2>/dev/null )
+            ;;
+        *)
+            return 1
+            ;;
+    esac
+}
 
 # Navigateur de dossiers interactif
-# /!\ Les echos du menu sont redirigés vers stderr (>&2)
-# pour que seul le chemin final soit capturé sur stdout.
 browse_directory() {
     local current_dir="${1:-$HOME}"
     [ -d "$current_dir" ] || current_dir="$HOME"
@@ -40,7 +79,6 @@ browse_directory() {
         echo -e "${BLUE}=== Sélection du dossier de review ===${NC}" >&2
         echo -e "Dossier actuel : ${YELLOW}${current_dir}${NC}\n" >&2
 
-        # Liste des sous-dossiers non cachés
         local subdirs=()
         while IFS= read -r -d '' dir; do
             subdirs+=("$dir")
@@ -73,14 +111,12 @@ browse_directory() {
     done
 }
 
-# Mise à jour de la variable de dossier dans le SHELL_RC et dans l'environnement
 set_reviews_env_var() {
     local start_dir="${!VAR_NAME:-$HOME}"
     local new_path
     new_path=$(browse_directory "$start_dir")
 
     if [ -n "$new_path" ] && [ -d "$new_path" ]; then
-        # Nettoyage de l'ancienne entrée dans SHELL_RC si elle existe
         if grep -q "$VAR_NAME=" "$SHELL_RC" 2>/dev/null; then
             local tmp_rc
             tmp_rc=$(mktemp)
@@ -88,7 +124,6 @@ set_reviews_env_var() {
             mv "$tmp_rc" "$SHELL_RC"
         fi
 
-        # Ajout de la nouvelle configuration
         echo "export $VAR_NAME=\"$new_path\"" >> "$SHELL_RC"
         export "$VAR_NAME"="$new_path"
 
@@ -99,7 +134,6 @@ set_reviews_env_var() {
     fi
 }
 
-# Configuration initiale au lancement
 setup_reviews_env_var() {
     if [ -z "${!VAR_NAME}" ] || [ ! -d "${!VAR_NAME}" ]; then
         clear
@@ -110,7 +144,6 @@ setup_reviews_env_var() {
     fi
 }
 
-# Mise à jour du script manager.sh lui-même
 update_manager() {
     local manager_url="${RAW_BASE_URL}/manager.sh"
     local script_path
@@ -141,10 +174,9 @@ update_manager() {
     read -r -p "Appuyez sur Entrée pour continuer..."
 }
 
-# Exécution des scripts sur GitHub
 execute_remote_script() {
     local action="$1" # install / uninstall
-    local item="$2"   # folder, git_c, git_acp, review, git_retry
+    local item="$2"
     local script_url="${RAW_BASE_URL}/scripts/${item}/${action}.sh"
 
     clear
@@ -152,7 +184,7 @@ execute_remote_script() {
 
     if curl --output /dev/null --silent --head --fail "$script_url"; then
         curl -sSL "$script_url" | env "$VAR_NAME=${!VAR_NAME}" SHELL_RC="$SHELL_RC" bash
-        echo -e "\n${GREEN}[OK] Opération '$action' terminée.${NC}"
+        echo -e "\n${GREEN}[OK] Opération '$action' terminée pour $item.${NC}"
     else
         echo -e "\n${RED}[Erreur] Impossible de trouver le script : $script_url${NC}"
     fi
@@ -161,27 +193,121 @@ execute_remote_script() {
     read -r -p "Appuyez sur Entrée pour continuer..."
 }
 
-show_submenu() {
-    local name="$1"
-    local id="$2"
+execute_multiple_scripts() {
+    local action="$1"
+    shift
+    local items=("$@")
 
+    clear
+    echo -e "${BLUE}==> Lancement de l'opération '$action' ...${NC}\n"
+
+    for item in "${items[@]}"; do
+        local script_url="${RAW_BASE_URL}/scripts/${item}/${action}.sh"
+        echo -e "${BLUE}---> [$action] $item...${NC}"
+
+        if curl --output /dev/null --silent --head --fail "$script_url"; then
+            curl -sSL "$script_url" | env "$VAR_NAME=${!VAR_NAME}" SHELL_RC="$SHELL_RC" bash
+            echo -e "${GREEN}[OK] $item ($action)${NC}\n"
+        else
+            echo -e "${RED}[Erreur] Impossible de trouver le script : $script_url${NC}\n"
+        fi
+    done
+
+    echo -e "${GREEN}Opérations terminées !${NC}"
+    echo ""
+    read -r -p "Appuyez sur Entrée pour continuer..."
+}
+
+# --- MENU INSTALLATION ---
+show_install_menu() {
     while true; do
         clear
-        echo -e "${BLUE}--- [ Option : $name ] ---${NC}"
-        echo "1) Installer"
-        echo "2) Désinstaller"
-        echo "3) Retour"
-        read -r -p "Choix (1-3) : " sub_choice
+        echo -e "${BLUE}--- [ Menu Installation ] ---${NC}"
+        
+        local idx=1
+        for item in "${ALL_ITEMS[@]}"; do
+            echo "$idx) $(get_item_label "$item")"
+            ((idx++))
+        done
+        
+        echo "$idx) Tout installer"
+        local opt_all=$idx
+        ((idx++))
+        echo "$idx) Retour"
+        local opt_back=$idx
 
-        case $sub_choice in
-            1) execute_remote_script "install" "$id" ;;
-            2) execute_remote_script "uninstall" "$id" ;;
-            3) break ;;
-            *) 
-                echo -e "${RED}Option invalide.${NC}"
+        echo ""
+        read -r -p "Choix (1-$opt_back) : " choice
+
+        if [[ "$choice" =~ ^[0-9]+$ ]]; then
+            if [ "$choice" -ge 1 ] && [ "$choice" -le "${#ALL_ITEMS[@]}" ]; then
+                local selected_item="${ALL_ITEMS[$((choice-1))]}"
+                execute_remote_script "install" "$selected_item"
+            elif [ "$choice" -eq "$opt_all" ]; then
+                execute_multiple_scripts "install" "${ALL_ITEMS[@]}"
+            elif [ "$choice" -eq "$opt_back" ]; then
+                break
+            else
+                echo -e "${RED}Choix invalide.${NC}"
                 sleep 1
-                ;;
-        esac
+            fi
+        else
+            echo -e "${RED}Choix invalide.${NC}"
+            sleep 1
+        fi
+    done
+}
+
+# --- MENU DÉSINSTALLATION (Filtre dynamique des éléments installés) ---
+show_uninstall_menu() {
+    while true; do
+        clear
+        echo -e "${BLUE}--- [ Menu Désinstallation ] ---${NC}"
+
+        local installed_items=()
+        for item in "${ALL_ITEMS[@]}"; do
+            if is_installed "$item"; then
+                installed_items+=("$item")
+            fi
+        done
+
+        if [ "${#installed_items[@]}" -eq 0 ]; then
+            echo -e "${YELLOW}Aucune commande installée n'a été détectée.${NC}\n"
+            read -r -p "Appuyez sur Entrée pour retourner au menu..." dummy
+            break
+        fi
+
+        local idx=1
+        for item in "${installed_items[@]}"; do
+            echo "$idx) $(get_item_label "$item")"
+            ((idx++))
+        done
+
+        echo "$idx) Tout désinstaller"
+        local opt_all=$idx
+        ((idx++))
+        echo "$idx) Retour"
+        local opt_back=$idx
+
+        echo ""
+        read -r -p "Choix (1-$opt_back) : " choice
+
+        if [[ "$choice" =~ ^[0-9]+$ ]]; then
+            if [ "$choice" -ge 1 ] && [ "$choice" -le "${#installed_items[@]}" ]; then
+                local selected_item="${installed_items[$((choice-1))]}"
+                execute_remote_script "uninstall" "$selected_item"
+            elif [ "$choice" -eq "$opt_all" ]; then
+                execute_multiple_scripts "uninstall" "${installed_items[@]}"
+            elif [ "$choice" -eq "$opt_back" ]; then
+                break
+            else
+                echo -e "${RED}Choix invalide.${NC}"
+                sleep 1
+            fi
+        else
+            echo -e "${RED}Choix invalide.${NC}"
+            sleep 1
+        fi
     done
 }
 
@@ -192,25 +318,19 @@ while true; do
     clear
     echo -e "${BLUE}=== 42-TOOLS MANAGER ===${NC}"
     echo -e "Variable $VAR_NAME = ${YELLOW}${!VAR_NAME}${NC}\n"
-    echo "1) Commande git c (Clone + .gitignore .c)"
-    echo "2) Commande git acp (Add + Commit + Push)"
-    echo "3) Commande git retry (Clone + Copy data)"
-    echo "4) Commande review / r (Clean + Clone + Flags)"
-    echo "5) Commande ccc / c (Compile ensemble tout les .c courant)"
-    echo "6) Changer le dossier de review"
-    echo "7) Mettre à jour manager.sh"
-    echo "8) Exit"
-    read -r -p "Sélectionnez une option (1-8) : " main_choice
+    echo "1) Installer une commande"
+    echo "2) Désinstaller une commande"
+    echo "3) Changer le dossier de review"
+    echo "4) Mettre à jour manager.sh"
+    echo "5) Exit"
+    read -r -p "Sélectionnez une option (1-5) : " main_choice
 
     case $main_choice in
-        1) show_submenu "Commande git c" "git_c" ;;
-        2) show_submenu "Commande git acp" "git_acp" ;;
-        3) show_submenu "Commande git retry" "git_retry" ;;
-        4) show_submenu "Commande review (r)" "review" ;;
-        5) show_submenu "Commande ccc (c)" "ccc" ;;
-        6) set_reviews_env_var ;;
-        7) update_manager ;;
-        8)
+        1) show_install_menu ;;
+        2) show_uninstall_menu ;;
+        3) set_reviews_env_var ;;
+        4) update_manager ;;
+        5)
             clear
             echo -e "${GREEN}Au revoir ! Pensez à exécuter 'source $SHELL_RC' dans votre terminal.${NC}"
             exit 0
