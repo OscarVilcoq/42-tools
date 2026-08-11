@@ -258,6 +258,59 @@ show_install_menu() {
     done
 }
 
+# --- MENU MISE À JOUR (Filtre dynamique des éléments installés) ---
+show_update_menu() {
+    while true; do
+        clear
+        echo -e "${BLUE}--- [ Menu Mise à Jour ] ---${NC}"
+
+        local installed_items=()
+        for item in "${ALL_ITEMS[@]}"; do
+            if is_installed "$item"; then
+                installed_items+=("$item")
+            fi
+        done
+
+        if [ "${#installed_items[@]}" -eq 0 ]; then
+            echo -e "${YELLOW}Aucune commande installée n'a été détectée à mettre à jour.${NC}\n"
+            read -r -p "Appuyez sur Entrée pour retourner au menu..." dummy
+            break
+        fi
+
+        local idx=1
+        for item in "${installed_items[@]}"; do
+            echo "$idx) $(get_item_label "$item")"
+            ((idx++))
+        done
+
+        echo "$idx) Tout mettre à jour"
+        local opt_all=$idx
+        ((idx++))
+        echo "$idx) Retour"
+        local opt_back=$idx
+
+        echo ""
+        read -r -p "Choix (1-$opt_back) : " choice
+
+        if [[ "$choice" =~ ^[0-9]+$ ]]; then
+            if [ "$choice" -ge 1 ] && [ "$choice" -le "${#installed_items[@]}" ]; then
+                local selected_item="${installed_items[$((choice-1))]}"
+                execute_remote_script "install" "$selected_item"
+            elif [ "$choice" -eq "$opt_all" ]; then
+                execute_multiple_scripts "install" "${installed_items[@]}"
+            elif [ "$choice" -eq "$opt_back" ]; then
+                break
+            else
+                echo -e "${RED}Choix invalide.${NC}"
+                sleep 1
+            fi
+        else
+            echo -e "${RED}Choix invalide.${NC}"
+            sleep 1
+        fi
+    done
+}
+
 # --- MENU DÉSINSTALLATION (Filtre dynamique des éléments installés) ---
 show_uninstall_menu() {
     while true; do
@@ -319,18 +372,20 @@ while true; do
     echo -e "${BLUE}=== 42-TOOLS MANAGER ===${NC}"
     echo -e "Variable $VAR_NAME = ${YELLOW}${!VAR_NAME}${NC}\n"
     echo "1) Installer une commande"
-    echo "2) Désinstaller une commande"
-    echo "3) Changer le dossier de review"
-    echo "4) Mettre à jour manager.sh"
-    echo "5) Exit"
-    read -r -p "Sélectionnez une option (1-5) : " main_choice
+    echo "2) Mettre à jour des commandes"
+    echo "3) Désinstaller une commande"
+    echo "4) Changer le dossier de review"
+    echo "5) Mettre à jour manager.sh"
+    echo "6) Exit"
+    read -r -p "Sélectionnez une option (1-6) : " main_choice
 
     case $main_choice in
         1) show_install_menu ;;
-        2) show_uninstall_menu ;;
-        3) set_reviews_env_var ;;
-        4) update_manager ;;
-        5)
+        2) show_update_menu ;;
+        3) show_uninstall_menu ;;
+        4) set_reviews_env_var ;;
+        5) update_manager ;;
+        6)
             clear
             echo -e "${GREEN}Au revoir ! Pensez à exécuter 'source $SHELL_RC' dans votre terminal.${NC}"
             exit 0
