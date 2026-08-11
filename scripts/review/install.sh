@@ -35,7 +35,7 @@ for arg in "$@"; do
 done
 
 if [ -n "$REPO_URL" ]; then
-    echo "==> Clonnage de $REPO_URL..."
+    echo "==> Clonage de $REPO_URL..."
     git clone "$REPO_URL" target_review && \
     cd target_review && \
     code . || { echo "Erreur lors du clonage ou de l'ouverture de VS Code"; exit 1; }
@@ -66,10 +66,25 @@ EOF
 
 chmod +x "$BIN_DIR/review"
 
-# 2. Ajout de l'alias 'r' dans le fichier shell RC
-SHELL_RC="${SHELL_RC:-$HOME/.bashrc}"
+# Lien symbolique pour que 'r' fonctionne partout directement
+ln -sf "$BIN_DIR/review" "$BIN_DIR/r"
+
+# 2. Détection du Shell RC (.zshrc ou .bashrc)
+if [ -n "$ZSH_VERSION" ] || [[ "$SHELL" == *"zsh"* ]] || [ -f "$HOME/.zshrc" ]; then
+    SHELL_RC="$HOME/.zshrc"
+else
+    SHELL_RC="$HOME/.bashrc"
+fi
+
+# Export du PATH dans le Shell RC si non présent
+if ! grep -q "$BIN_DIR" "$SHELL_RC" 2>/dev/null; then
+    echo -e "\nexport PATH=\"\$HOME/.local/bin:\$PATH\"" >> "$SHELL_RC"
+fi
+
+# Ajout de l'alias
 if ! grep -q "alias r=" "$SHELL_RC" 2>/dev/null; then
     echo "alias r=\"$BIN_DIR/review\"" >> "$SHELL_RC"
 fi
 
-echo "Commande 'review' et alias 'r' installés."
+echo "==> Commande 'review' et alias/lien 'r' installés dans $SHELL_RC."
+echo "==> Pour utiliser 'r' immédiatement, lance : source $SHELL_RC"
